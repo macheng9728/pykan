@@ -26,6 +26,7 @@ f_arcsin = lambda x, y_th: ((), torch.pi/2 * torch.sign(x) * (torch.abs(x) > 1) 
 f_arccos = lambda x, y_th: ((), torch.pi/2 * (1-torch.sign(x)) * (torch.abs(x) > 1) + torch.nan_to_num(torch.arccos(x)) * (torch.abs(x) <= 1))
 f_exp = lambda x, y_th: ((x_th := torch.log(y_th)), y_th * (x > x_th) + torch.exp(x) * (x <= x_th))
 f_safelog = lambda x, y_th: ((x_th := torch.e**(-y_th)), - y_th * (torch.abs(x) < x_th) + torch.nan_to_num(torch.log(torch.abs(x))) * (torch.abs(x) >= x_th))
+f_safes_qrt = lambda x, y_th: ((x_th := y_th**2), torch.abs(x)/y_th * (torch.abs(x) < x_th) + torch.nan_to_num(torch.sqrt(torch.abs(x))) * (torch.abs(x) >= x_th))
 
 SYMBOLIC_LIB = {'x': (lambda x: x, lambda x: x, 1, lambda x, y_th: ((), x)),
                  'x^2': (lambda x: x**2, lambda x: x**2, 2, lambda x, y_th: ((), x**2)),
@@ -58,8 +59,10 @@ SYMBOLIC_LIB = {'x': (lambda x: x, lambda x: x, 1, lambda x, y_th: ((), x)),
                  'arctanh': (lambda x: torch.arctanh(x), lambda x: sympy.atanh(x), 4, f_arctanh),
                  '0': (lambda x: x*0, lambda x: x*0, 0, lambda x, y_th: ((), x*0)),
                  'gaussian': (lambda x: torch.exp(-x**2), lambda x: sympy.exp(-x**2), 3, lambda x, y_th: ((), torch.exp(-x**2))),
-                 'cosh': (lambda x: torch.cosh(x), lambda x: sympy.cosh(x), 5),
+#                 'cosh': (lambda x: torch.cosh(x), lambda x: sympy.cosh(x), 5),
+                 'cosh': (lambda x: torch.cosh(x), lambda x: sympy.cosh(x), 5, lambda x, y_th: ((), torch.cosh(x))),
                  'sigmoid': (lambda x: torch.sigmoid(x), sympy.Function('sigmoid'), 4),
+                 'safes_qrt': (lambda x: torch.sqrt(torch.abs(x)), lambda x: sympy.sqrt(sympy.Abs(x)), 2, f_safes_qrt),
                  #'relu': (lambda x: torch.relu(x), relu),
 }
 
