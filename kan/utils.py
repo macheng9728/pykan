@@ -18,6 +18,7 @@ f_inv5 = lambda x, y_th: ((x_th := 1/y_th**(1/5)), y_th/x_th*x * (torch.abs(x) <
 f_sqrt = lambda x, y_th: ((x_th := 1/y_th**2), x_th/y_th*x * (torch.abs(x) < x_th) + torch.nan_to_num(torch.sqrt(torch.abs(x))*torch.sign(x)) * (torch.abs(x) >= x_th))
 f_power1d5 = lambda x, y_th: torch.abs(x)**1.5
 f_5_3 = lambda x, y_th: ((x_th := 1/y_th**(3.0/5.0)), x/y_th*(torch.abs(x)<x_th) + torch.nan_to_num(torch.sign(x)*torch.pow(torch.abs(x),5/3))*(torch.abs(x)>=x_th))
+f_abs_pow5d3 = lambda x, y_th: ((x_th := y_th**(3.0/5.0)), (y_th/x_th)*torch.abs(x) * (torch.abs(x) < x_th) + torch.pow(torch.abs(x), 5.0/3) * (torch.abs(x) >= x_th))
 f_invsqrt = lambda x, y_th: ((x_th := 1/y_th**2), y_th * (torch.abs(x) < x_th) + torch.nan_to_num(1/torch.sqrt(torch.abs(x))) * (torch.abs(x) >= x_th))
 f_log = lambda x, y_th: ((x_th := torch.e**(-y_th)), - y_th * (torch.abs(x) < x_th) + torch.nan_to_num(torch.log(torch.abs(x))) * (torch.abs(x) >= x_th))
 f_tan = lambda x, y_th: ((clip := x % torch.pi), (delta := torch.pi/2-torch.arctan(y_th)), - y_th/delta * (clip - torch.pi/2) * (torch.abs(clip - torch.pi/2) < delta) + torch.nan_to_num(torch.tan(clip)) * (torch.abs(clip - torch.pi/2) >= delta))
@@ -44,6 +45,7 @@ SYMBOLIC_LIB = {'x': (lambda x: x, lambda x: x, 1, lambda x, y_th: ((), x)),
                  '1/sqrt(x)': (lambda x: 1/torch.sqrt(x), lambda x: 1/sympy.sqrt(x), 2, f_invsqrt),
                  '1/x^0.5': (lambda x: 1/torch.sqrt(x), lambda x: 1/sympy.sqrt(x), 2, f_invsqrt),
                  'x^(5/3)': (lambda x:torch.pow(x, 5.0/3), lambda x: sympy.Pow(x, sympy.Rational(5, 3)), 2,f_5_3),
+                 'abs(x)^(5/3)': (lambda x: torch.abs(x)**(5.0/3), lambda x: sympy.Pow(sympy.Abs(x), sympy.Rational(5, 3)), 2, f_abs_pow5d3),
                  'exp': (lambda x: torch.exp(x), lambda x: sympy.exp(x), 2, f_exp),
                  'log': (lambda x: torch.log(x), lambda x: sympy.log(x), 2, f_log),
                  'log(abs(x))': (lambda x: torch.log(torch.abs(x)), lambda x: sympy.log(sympy.Abs(x)), 2, f_safelog),
